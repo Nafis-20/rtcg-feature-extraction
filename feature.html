@@ -1,11 +1,95 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feature Extraction</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/opencv/4.5.4/opencv.js" integrity="sha512-B1CgK0xk1wjz52WbKh4zxcggRhNo/lTwzr3oUcmZmXhw4/CvU7M9mGFTfl/5gqZ7uob9ekWq8IayIoV8jeU7ug==" crossorigin="anonymous"></script>
 </head>
 
 <body>
-    <p>Hello!</p>
+    <input type="file" id="fileInput" accept="image/*">
+    <button id="generateBtn">Generate Features</button>
+    <button id="saveBtn" style="display: none;">Save Image</button>
+    <br>
+    <canvas id="imageCanvas" style="max-width: 100%;"></canvas>
+    <br>
+    <canvas id="outputCanvas" style="max-width: 100%;"></canvas>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const imageCanvas = document.getElementById('imageCanvas');
+        const outputCanvas = document.getElementById('outputCanvas');
+        const ctxImage = imageCanvas.getContext('2d');
+        const ctxOutput = outputCanvas.getContext('2d');
+
+        let imgData;
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    imageCanvas.width = img.width;
+                    imageCanvas.height = img.height;
+                    outputCanvas.width = img.width;
+                    outputCanvas.height = img.height;
+                    ctxImage.drawImage(img, 0, 0);
+                    imgData = ctxImage.getImageData(0, 0, img.width, img.height);
+                    generateBtn.disabled = false;
+                };
+                img.src = event.target.result;
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+        generateBtn.addEventListener('click', function() {
+            if (imgData) {
+                const src = cv.matFromArray(imgData.data, cv.CV_8UC4);
+                const gray = new cv.Mat();
+                const keypoints = new cv.KeyPoints();
+                const descriptors = new cv.Mat();
+
+                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
+                cv.imshow('outputCanvas', gray);
+
+                cv.FastFeatureDetector_create().detect(gray, keypoints);
+                cv.SIFT_create().compute(gray, keypoints, descriptors);
+
+                for (let i = 0; i < keypoints.size(); ++i) {
+                    const kp = keypoints.get(i);
+                    const x = kp.pt.x;
+                    const y = kp.pt.y;
+                    ctxOutput.beginPath();
+                    ctxOutput.arc(x, y, 5, 0, 2 * Math.PI);
+                    ctxOutput.fillStyle = 'red';
+                    ctxOutput.fill();
+                }
+
+                generateBtn.disabled = true;
+                saveBtn.style.display = 'block';
+
+                src.delete();
+                gray.delete();
+                keypoints.delete();
+                descriptors.delete();
+            }
+        });
+
+        saveBtn.addEventListener('click', function() {
+            const imageData = outputCanvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = imageData;
+            link.download = 'output.png';
+            link.click();
+        });
+    </script>
 </body>
 
 </html>
