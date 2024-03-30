@@ -4,90 +4,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feature Extraction</title>
+    <title>Feature Extraction AR</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/opencv/4.5.4/opencv.js" integrity="sha512-B1CgK0xk1wjz52WbKh4zxcggRhNo/lTwzr3oUcmZmXhw4/CvU7M9mGFTfl/5gqZ7uob9ekWq8IayIoV8jeU7ug==" crossorigin="anonymous"></script>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/2.2.0/aframe/build/aframe-ar.js"></script>
 </head>
 
 <body>
-    <input type="file" id="fileInput" accept="image/*">
-    <button id="generateBtn">Generate Features</button>
-    <button id="saveBtn" style="display: none;">Save Image</button>
-    <br>
-    <canvas id="imageCanvas" style="max-width: 100%;"></canvas>
-    <br>
-    <canvas id="outputCanvas" style="max-width: 100%;"></canvas>
+    <div id="content">
+        <h2>Upload an image:</h2>
+        <input type="file" id="fileInput" accept="image/*">
+        <br>
+        <button id="generateBtn" disabled>Generate Features</button>
+        <button id="saveBtn" style="display: none;">Save Feature Image</button>
+        <div id="previewContainer" style="display: none;">
+            <h2>Image Preview:</h2>
+            <img id="previewImage" style="max-width: 300px;">
+            <br>
+            <canvas id="outputCanvas" style="max-width: 300px;"></canvas>
+        </div>
+        <input type="range" id="thetaRange" min="0" max="180" value="45">
+        <label for="thetaRange">Theta: <span id="thetaValue">45</span></label>
+        <button id="openCameraBtn">Open Camera</button>
+    </div>
+
+    <a-scene id="arScene" embedded>
+        <a-assets>
+            <!-- Model and its materials -->
+            <a-asset-item id="model" src="bird.glb"></a-asset-item>
+        </a-assets>
+
+        <!-- Feature extracted image as an overlay -->
+        <a-marker preset="hiro" id="marker">
+            <a-image src="#targetImage"></a-image>
+        </a-marker>
+        <a-camera-static/>
+    </a-scene>
 
     <script>
-        const fileInput = document.getElementById('fileInput');
-        const generateBtn = document.getElementById('generateBtn');
-        const saveBtn = document.getElementById('saveBtn');
-        const imageCanvas = document.getElementById('imageCanvas');
-        const outputCanvas = document.getElementById('outputCanvas');
-        const ctxImage = imageCanvas.getContext('2d');
-        const ctxOutput = outputCanvas.getContext('2d');
-
-        let imgData;
-
-        fileInput.addEventListener('change', function(e) {
+        document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             const reader = new FileReader();
-
             reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    imageCanvas.width = img.width;
-                    imageCanvas.height = img.height;
-                    outputCanvas.width = img.width;
-                    outputCanvas.height = img.height;
-                    ctxImage.drawImage(img, 0, 0);
-                    imgData = ctxImage.getImageData(0, 0, img.width, img.height);
-                    generateBtn.disabled = false;
-                };
+                const img = document.getElementById('previewImage');
                 img.src = event.target.result;
+                img.onload = function() {
+                    document.getElementById('generateBtn').disabled = false;
+                    document.getElementById('previewContainer').style.display = 'block';
+                };
             };
-
             reader.readAsDataURL(file);
         });
 
-        generateBtn.addEventListener('click', function() {
-            if (imgData) {
-                const src = cv.matFromArray(imgData.data, cv.CV_8UC4);
-                const gray = new cv.Mat();
-                const keypoints = new cv.KeyPoints();
-                const descriptors = new cv.Mat();
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            const img = document.getElementById('previewImage');
+            const canvas = document.getElementById('outputCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
 
-                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
-                cv.imshow('outputCanvas', gray);
+            ctx.drawImage(img, 0, 0);
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const gray = new cv.Mat();
+            const keypoints = new cv.KeyPoints();
+            cv.cvtColor(cv.matFromArray(imgData.data, cv.CV_8UC4), gray, cv.COLOR_RGBA2GRAY, 0);
+            cv.FastFeatureDetector_create().detect(gray, keypoints);
 
-                cv.FastFeatureDetector_create().detect(gray, keypoints);
-                cv.SIFT_create().compute(gray, keypoints, descriptors);
+            const thetaValue = document.getElementById('thetaRange').value;
+            const theta = parseFloat(thetaValue) * (Math.PI / 180);
 
-                for (let i = 0; i < keypoints.size(); ++i) {
-                    const kp = keypoints.get(i);
-                    const x = kp.pt.x;
-                    const y = kp.pt.y;
-                    ctxOutput.beginPath();
-                    ctxOutput.arc(x, y, 5, 0, 2 * Math.PI);
-                    ctxOutput.fillStyle = 'red';
-                    ctxOutput.fill();
-                }
-
-                generateBtn.disabled = true;
-                saveBtn.style.display = 'block';
-
-                src.delete();
-                gray.delete();
-                keypoints.delete();
-                descriptors.delete();
+            for (let i = 0; i < keypoints.size(); ++i) {
+                const kp = keypoints.get(i);
+                const x = kp.pt.x;
+                const y = kp.pt.y;
+                const size = kp.size * Math.tan(theta);
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, 2 * Math.PI);
+                ctx.fillStyle = 'red';
+                ctx.fill();
             }
+
+            document.getElementById('saveBtn').style.display = 'block';
+            document.getElementById('generateBtn').disabled = true;
         });
 
-        saveBtn.addEventListener('click', function() {
-            const imageData = outputCanvas.toDataURL('image/png');
+        document.getElementById('saveBtn').addEventListener('click', function() {
+            const canvas = document.getElementById('outputCanvas');
+            const imageData = canvas.toDataURL('image/png');
             const link = document.createElement('a');
             link.href = imageData;
-            link.download = 'output.png';
+            link.download = 'feature_image.png';
             link.click();
+        });
+
+        document.getElementById('openCameraBtn').addEventListener('click', function() {
+            document.getElementById('content').style.display = 'none';
+            document.getElementById('arScene').style.display = 'block';
+            navigator.mediaDevices.getUserMedia({
+                    video: true
+                })
+                .then(function(stream) {
+                    const arjsComponent = document.querySelector('a-scene').components.arjs;
+                    if (arjsComponent && arjsComponent.system) {
+                        arjsComponent.system.arVideo.srcObject = stream;
+                    } else {
+                        console.error('AR.js component not found or not initialized properly.');
+                    }
+                })
+                .catch(function(err) {
+                    console.error('Error accessing the camera.', err);
+                });
+        });
+
+        // AR.js event listener for marker detection
+        document.getElementById('marker').addEventListener('markerFound', function() {
+            // Show 3D object
+            document.getElementById('model').setAttribute('visible', 'true');
+        });
+
+        document.getElementById('marker').addEventListener('markerLost', function() {
+            // Hide 3D object
+            document.getElementById('model').setAttribute('visible', 'false');
+        });
+
+        // Update theta value display
+        document.getElementById('thetaRange').addEventListener('input', function() {
+            document.getElementById('thetaValue').textContent = this.value;
         });
     </script>
 </body>
