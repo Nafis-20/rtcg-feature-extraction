@@ -14,20 +14,20 @@
         <h2 style="margin-top: 0;">Upload an image:</h2>
         <input type="file" id="fileInput" accept="image/*">
         <br>
-        <button id="generateBtn" disabled>Generate Features</button>
-        <button id="saveBtn" style="display: none;">Save Feature Image</button>
+        <button id="generateBtn" disabled style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Generate Features</button>
+        <button id="saveBtn" style="display: none; background-color: #28a745; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-left: 10px;">Save Feature Image</button>
         <div id="previewContainer" style="display: none;">
-            <h2>Image Preview:</h2>
-            <img id="previewImage" style="max-width: 300px;">
+            <h2 style="color: #007bff;">Image Preview:</h2>
+            <img id="previewImage" style="max-width: 100%; border-radius: 5px; margin-bottom: 10px;">
             <br>
-            <canvas id="outputCanvas" style="max-width: 300px;"></canvas>
+            <canvas id="outputCanvas" style="max-width: 100%; border-radius: 5px;"></canvas>
         </div>
-        <input type="range" id="thetaRange" min="0" max="180" value="45">
-        <label for="thetaRange">Theta: <span id="thetaValue">45</span></label>
-        <button id="openCameraBtn">Open Camera</button>
+        <input type="range" id="thetaRange" min="0" max="180" value="45" style="width: 100%; margin-top: 10px;">
+        <label for="thetaRange" style="display: block; margin-top: 5px;">Theta: <span id="thetaValue">45</span></label>
+        <button id="openCameraBtn" style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">Open Camera</button>
     </div>
 
-    <a-scene id="arScene" embedded>
+    <a-scene id="arScene" embedded style="display: none; margin-top: 20px;">
         <a-assets>
             <!-- Model and its materials -->
             <a-asset-item id="model" src="bird.glb"></a-asset-item>
