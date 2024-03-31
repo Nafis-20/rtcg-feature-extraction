@@ -9,9 +9,12 @@
     <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/2.2.0/aframe/build/aframe-ar.js"></script>
 </head>
 
-<body style="font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh;">
+<body>
+
     <div id="content" style="text-align: center; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-        <h2 style="margin-top: 0;">Upload an image:</h2>
+        <h2 style="margin-top: 0;">Tracking Web-based AR</h2>
+        <p>Insert your image to generate AR marker using a feature-based tracking technique as presented below, three stages begin with a captured image is converted into a grayscale image, 
+            and the grayscale image has created the features.</p>
         <input type="file" id="fileInput" accept="image/*">
         <br>
         <button id="generateBtn" disabled style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Generate Features</button>
