@@ -15,7 +15,26 @@
         <h2 style="margin-top: 0;">Tracking Web-based AR</h2>
         <p>Insert your image to generate AR marker using a feature-based tracking technique as presented below, three stages begin with a captured image is converted into a grayscale image, 
             and the grayscale image has created the features.</p>
-        <input type="file" id="fileInput" accept="image/*">
+            
+        <!--content-->
+        <div>
+            <div style="width: 50%; flex: 0 0 50%; max-width: 50%; padding-right: 15px; padding-left: 15px; position: relative;">
+                <!-- Upload Image Section -->
+                <h3 class="name" style="height: 35px;">Place Image Here</h3>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+
+            <div style="width: 50%; flex: 0 0 50%; max-width: 50%; padding-right: 15px; padding-left: 15px; position: relative;">
+                <!-- Greyscale Image Section -->
+                <h3 class="name" style="height: 35px;">Greysscale Image</h3>
+                <button onclick="grayscaleImage()" class="btn btn-primary" type="button">Process Now</button>
+                <button id="generateBtn" disabled style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Generate Features</button>
+            </div>
+
+            <div>
+                <!--Feature Image Scale-->
+            </div>
+
         <br>
         <button id="generateBtn" disabled style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Generate Features</button>
         <button id="saveBtn" style="display: none; background-color: #28a745; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-left: 10px;">Save Feature Image</button>
@@ -31,6 +50,7 @@
         <a href="imgtrack.html" class="btn btn-primary">
         <button id="openCameraBtn" style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">Open Camera</button>
         </a>
+        </div>
     </div>
 
     <a-scene id="arScene" embedded style="display: none; margin-top: 20px;">
