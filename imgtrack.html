@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <!-- Include necessary libraries -->
+  <script src="https://aframe.io/releases/1.0.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+  <body style="margin: 0; overflow: hidden;">
+    <!-- AR scene setup -->
+    <a-scene embedded arjs>
+      <!-- Define marker for AR recognition -->
+      <a-marker type='pattern' url='data/pattern-marker.patt'>
+        <!-- Display abstract content -->
+        <a-box position='0 0.5 0' material='opacity: 5.0; color: lightblue;'></a-box>
+      </a-marker>
+      <!-- Define camera entity -->
+      <a-entity camera></a-entity>
+    </a-scene>
+  </body>
+</html>
